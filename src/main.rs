@@ -28,7 +28,7 @@ fn main() -> Result<(), String> {
     let reg: Handlebars = handlebars_init();
 
     // Program Directories
-    let proj_dirs = ProjectDirs::from("star", "Neutron Corp", "Neutron Stars").unwrap();
+    let proj_dirs = ProjectDirs::from("star", "Neutron", "Neutron Star").unwrap();
 
     // Ensure integrity of configuration
     // TODO use if let?

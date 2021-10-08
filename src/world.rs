@@ -40,12 +40,12 @@ impl WorldBuilder {
     pub fn new(rng: &mut WyRand) -> Self {
         Self {
             id: Ident::new(rng.generate::<u64>().to_string()),
-            galaxyb: GalaxyBuilder::new(),
+            galaxyb: GalaxyBuilder::total(rng),
         }
     }
     pub fn constellations(mut self, rng: &mut WyRand, num: u8) -> Self {
         for _ in 0..num {
-            self.galaxyb.constellation(rng, Constellation::new());
+            self.galaxyb.add_constellation(rng);
         }
         self
     }
