@@ -9,6 +9,7 @@ mod world;
 
 use std::{fs::File, io::prelude::*, path::Path};
 
+use clap::clap_app;
 use directories::ProjectDirs;
 use handlebars::Handlebars;
 use nanorand::WyRand;
@@ -22,6 +23,14 @@ type Command = Vec<String>;
 type Script = Vec<Command>;
 
 fn main() -> Result<(), String> {
+    // Clap setup
+    let clap_conf = clap_app!(
+        neutron =>
+            (version: "0.1.0")
+            (author: "Lorenzo Ravaglia")
+            (about: "Science Fiction Game")
+    )
+    .get_matches();
     // Setup
     // RNG
     let mut rng = WyRand::new();

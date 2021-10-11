@@ -1,4 +1,5 @@
 use crate::{ident::Ident, name};
+use nalgebra::geometry::Point2;
 use nanorand::{Rng, WyRand};
 use serde::{Deserialize, Serialize};
 use std::cmp::*;
@@ -16,8 +17,10 @@ impl Point {
     fn dissolve(&self) -> (i8, i8) {
         (self.x, self.y)
     }
+    fn nalgebra(&self) -> Point2<f64> {
+        Point2::new(self.x as f64, self.y as f64)
+    }
 }
-
 type CoordinateMap<T> = HashMap<Point, T>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -70,12 +73,19 @@ impl GalaxyBuilder {
         let connections = {
             let mut ret: Vec<(Point, Point)> = Vec::new();
 
-            // FIXME
-            for (&cpos, _) in constellations.iter() {
-                for (&tpos, _) in constellations.iter() {
-                    if !(ret.contains(&(cpos, tpos)) || ret.contains(&(tpos, cpos)) || tpos == cpos)
-                        && point_in_radius(cpos.dissolve(), tpos.dissolve(), 32)
+            for (&cpos, ccons) in constellations.iter() {
+                for (&tpos, tcons) in constellations.iter() {
+                    /*
+                    If the connection does not exist
+                    AND the points are not the same
+                    AND the point is in a radius of 32
+                    */
+                    if !(ret.contains(&(cpos, tpos))
+                        || ret.contains(&(tpos, cpos))
+                        || tcons == ccons)
+                        && nalgebra::distance(&cpos.nalgebra(), &tpos.nalgebra()) <= 128.0
                     {
+                        // then add a connection
                         ret.push((cpos, tpos));
                     }
                 }
@@ -111,9 +121,7 @@ impl ConstellationBuilder {
     pub fn total(rng: &mut WyRand) -> Self {
         let mut ret = Self::new();
 
-        for _ in 0..4 {
-            // FIXME Broken
-            //rng.generate_range(4..8) {
+        for _ in 0..rng.generate_range(4..8) {
             ret.systems.push(SystemBuilder::total(rng))
         }
 
@@ -224,14 +232,4 @@ impl PlanetBuilder {
 
 fn tolerance(one: i8, two: i8, tolerance: u8) -> bool {
     one + two <= tolerance as i8
-}
-
-fn point_in_radius(center: (i8, i8), point: (i8, i8), radius: i8) -> bool {
-    fn safe_sub(a: i32, b: i32) -> i32 {
-        max(a, b) - min(a, b)
-    }
-    let v1 = safe_sub(point.0 as i32, center.0 as i32) ^ 2;
-    let v2 = safe_sub(point.1 as i32, center.1 as i32) ^ 2;
-    let d = safe_sub(v1, v2);
-    d <= (radius ^ 2) as i32
 }
