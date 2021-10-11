@@ -1,5 +1,3 @@
-use crate::naval::Class;
-
 pub fn ship() -> String {
     let ret = "Ship";
     ret.to_string()

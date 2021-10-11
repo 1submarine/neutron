@@ -3,14 +3,14 @@ use serde::{Deserialize, Serialize};
 use serde_yaml::Error;
 
 use crate::{
-    astronomical::{Constellation, Galaxy, GalaxyBuilder},
+    astronomical::{Galaxy, GalaxyBuilder},
     ident::Ident,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct World {
     pub id: Ident,
-    galaxy: Galaxy,
+    pub galaxy: Galaxy,
 }
 impl World {
     pub fn builder(rng: &mut WyRand) -> WorldBuilder {
@@ -45,7 +45,7 @@ impl WorldBuilder {
     }
     pub fn constellations(mut self, rng: &mut WyRand, num: u8) -> Self {
         for _ in 0..num {
-            self.galaxyb.add_constellation(rng);
+            self.galaxyb.add_constellation();
         }
         self
     }
@@ -53,10 +53,10 @@ impl WorldBuilder {
         self.id = Ident::new(name);
         self
     }
-    pub fn build(self) -> World {
+    pub fn build(self, rng: &mut WyRand) -> World {
         World {
             id: self.id.clone(),
-            galaxy: self.galaxyb.build(),
+            galaxy: self.galaxyb.build(rng),
         }
     }
 }

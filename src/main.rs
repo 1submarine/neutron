@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 mod astronomical;
+mod display;
 mod ident;
+mod input;
 mod name;
 mod naval;
 mod save_game;
@@ -14,7 +16,7 @@ use nanorand::WyRand;
 use rustyline::Editor;
 use serde_json::json;
 
-use crate::{save_game::SaveGame, world::World};
+use crate::{save_game::SaveGame, world::WorldBuilder};
 
 fn main() -> Result<(), String> {
     // Setup
@@ -73,10 +75,7 @@ fn main() -> Result<(), String> {
     // Load Readline history
     rl.load_history(&hist_file).unwrap();
 
-    let world = World::builder(&mut rng)
-        .constellations(&mut rng, 2)
-        .name(crate::name::world())
-        .build();
+    let world = WorldBuilder::new(&mut rng).build(&mut rng);
 
     // Print Greeting
     println!("Welcome {}", player_name);
@@ -95,6 +94,7 @@ fn main() -> Result<(), String> {
                 rl.save_history(&hist_file).unwrap();
             }
             "exit" => break 'running,
+            "map" => display::map(&world.galaxy),
             _ => (),
         }
     }

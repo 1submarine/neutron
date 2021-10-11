@@ -1,0 +1,9 @@
+<svg viewBox="-128 -128 255 255" xmlns="http://www.w3.org/2000/svg">
+<circle cx="-106" cy="94" fill="green" r="4"/>
+<circle cx="-20" cy="-87" fill="green" r="4"/>
+<circle cx="-30" cy="9" fill="green" r="4"/>
+<circle cx="-75" cy="86" fill="green" r="4"/>
+<line stroke="green" x1="-106" x2="-30" y1="94" y2="9"/>
+<line stroke="green" x1="-106" x2="-75" y1="94" y2="86"/>
+<line stroke="green" x1="-30" x2="-75" y1="9" y2="86"/>
+</svg>

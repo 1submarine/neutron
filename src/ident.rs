@@ -1,11 +1,16 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq)]
 pub struct Ident {
     name: String,
     refer: String,
     pub uuidv4: Uuid,
+}
+impl PartialEq for Ident {
+    fn eq(&self, other: &Self) -> bool {
+        self.uuidv4 == other.uuidv4
+    }
 }
 impl Ident {
     pub fn new<S: Into<String>>(nname: S) -> Self {
