@@ -2,21 +2,24 @@
 mod astronomical;
 mod display;
 mod ident;
-mod input;
 mod name;
 mod naval;
 mod save_game;
 mod world;
 
-use std::fs::File;
+use std::{fs::File, io::prelude::*, path::Path};
 
 use directories::ProjectDirs;
 use handlebars::Handlebars;
 use nanorand::WyRand;
 use rustyline::Editor;
 use serde_json::json;
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{save_game::SaveGame, world::WorldBuilder};
+
+type Command = Vec<String>;
+type Script = Vec<Command>;
 
 fn main() -> Result<(), String> {
     // Setup
@@ -79,23 +82,61 @@ fn main() -> Result<(), String> {
 
     // Print Greeting
     println!("Welcome {}", player_name);
+    let script: Script = {
+        let path = Path::new("script.yaml");
+        if path.is_file() {
+            let script = File::open(path);
+            let mut contents = String::new();
+            script.unwrap().read_to_string(&mut contents).unwrap();
+            serde_yaml::from_str::<Script>(contents.as_str()).unwrap()
+        } else {
+            Vec::new()
+        }
+    };
+    let scripted = if script.len() > 0 { true } else { false };
+    if script.len() > 0 {
+        println!("Script ran:");
+        let mut i = 0;
+        for x in script.iter() {
+            println!("  Step {}:", {
+                i += 1;
+                i
+            });
+            for i in x.iter() {
+                println!("    {}", i)
+            }
+        }
+    }
 
     'running: loop {
-        let readline = rl.readline("(+ ").unwrap();
-        rl.add_history_entry(readline.as_str());
-        // TODO unicode_segmentation
-        match readline.as_str() {
-            "save" => saves.push(SaveGame::new(vec![(
-                world.id.uuidv4.to_string(),
-                world.save().unwrap(),
-            )])),
-            "write" => {
-                saves.last().unwrap().write(cache_dir).unwrap();
-                rl.save_history(&hist_file).unwrap();
+        let input: Script = if !scripted {
+            let readline = rl.readline("(+ ").unwrap();
+            rl.add_history_entry(readline.as_str());
+            let mut ret = Vec::new();
+            for x in readline.unicode_words().collect::<Vec<&str>>().drain(..) {
+                ret.push(x.to_string());
             }
-            "exit" => break 'running,
-            "map" => display::map(&world.galaxy),
-            _ => (),
+            vec![ret]
+        } else {
+            script.clone()
+        };
+
+        for i in input.iter() {
+            for x in i.iter() {
+                match x.as_str() {
+                    "save" => saves.push(SaveGame::new(vec![(
+                        world.id.uuidv4.to_string(),
+                        world.save().unwrap(),
+                    )])),
+                    "write" => {
+                        saves.last().unwrap().write(cache_dir).unwrap();
+                        rl.save_history(&hist_file).unwrap();
+                    }
+                    "exit" => break 'running,
+                    "map" => display::map(&world.galaxy),
+                    _ => (),
+                }
+            }
         }
     }
 
